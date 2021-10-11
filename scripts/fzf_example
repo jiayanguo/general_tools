@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o nounset
+base_path = <basepath>
+path=$(find . -path '*target*' -prune -o -path './.git' -prune -o -print |grep "${1:-}" |fzf -0 -1 --reverse --prompt "Which file? " |cut -d'/' -f2- )
+echo "$base_path/$path"
+
+commit="${1:-$(git log --oneline |fzf -0 -1 --reverse --prompt "Which commit? " |cut -d' ' -f1)}"
+echo "$base_path/commits/$path"
