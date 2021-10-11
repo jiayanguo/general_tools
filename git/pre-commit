@@ -1,0 +1,30 @@
+#!/bin/bash
+set -e
+set -o nounset
+set -x
+GIT_ROOT=$(git rev-parse --show-toplevel)
+GIT_FILTER=ACMR
+
+get_changes() {
+  local extension="$1"
+  git diff --staged --name-only --diff-filter=${GIT_FILTER} | grep -E "\.${extension}\$" | sed 's| |\\ |g'
+}
+
+_reformat() {
+  local extension="$1"
+  local formatter="$2"
+  cd "${GIT_ROOT}"
+  local changed=$( get_changes "java" )
+  if [ -n "${changed}" ]; then
+    echo "Formatting: $changed"
+    echo "${changed}" | xargs "${formatter}"
+    echo "${changed}" | xargs git add
+  fi
+}
+
+_reformat java scripts/reformat_java.sh
+_reformat xml xargs scripts/reformat_xml.sh
+B=$( which black )
+if [ -x "${B}" ]; then
+  _reformat py xargs "${B}"
+fi
